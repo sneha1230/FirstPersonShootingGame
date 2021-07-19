@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     public float mouseSensitivity;
     public bool invertX, invertY;
     Vector2 mouseInput;
+    public float gravity;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,8 +21,13 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        moveInput.x = Input.GetAxis("Horizontal")*moveSpeed*Time.deltaTime;
-        moveInput.z = Input.GetAxis("Vertical")*moveSpeed*Time.deltaTime;
+        // moveInput.x = Input.GetAxis("Horizontal")*moveSpeed*Time.deltaTime;
+        // moveInput.z = Input.GetAxis("Vertical")*moveSpeed*Time.deltaTime;
+        Vector3 horzMove = transform.right * Input.GetAxis("Horizontal");
+        Vector3 vertMove = transform.forward * Input.GetAxis("Vertical");
+        moveInput = horzMove + vertMove;
+        moveInput = moveInput * moveSpeed * Time.deltaTime;
+        moveInput.y += Physics.gravity.y * gravity * Time.deltaTime;
         characterController.Move(moveInput);
 
         //camera rotation using mouse input
