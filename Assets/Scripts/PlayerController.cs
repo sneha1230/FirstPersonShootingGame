@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public int moveSpeed;
+    public float moveSpeed;
     public CharacterController characterController;
     Vector3 moveInput;
     public Transform cameraTran;
@@ -12,6 +12,13 @@ public class PlayerController : MonoBehaviour
     public bool invertX, invertY;
     Vector2 mouseInput;
     public float gravity;
+    public float jumpForce;
+    public bool canJump;
+    public Transform groundCheckPoint;
+    public LayerMask groundMask;
+    bool canDoubleJump;
+    public float runSpeed;
+    public Animator anim;
     // Start is called before the first frame update
     void Start()
     {
@@ -26,9 +33,33 @@ public class PlayerController : MonoBehaviour
         Vector3 horzMove = transform.right * Input.GetAxis("Horizontal");
         Vector3 vertMove = transform.forward * Input.GetAxis("Vertical");
         moveInput = horzMove + vertMove;
-        moveInput = moveInput * moveSpeed * Time.deltaTime;
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            moveInput = moveInput * runSpeed;
+        }
+        else
+        {
+            moveInput = moveInput * moveSpeed;
+        }
         moveInput.y += Physics.gravity.y * gravity * Time.deltaTime;
-        characterController.Move(moveInput);
+
+        //jump code
+        canJump = Physics.OverlapSphere(groundCheckPoint.position, 0.25f, groundMask).Length>0;
+        if (canJump)
+        {
+            canDoubleJump = false;
+        }
+        if (Input.GetKeyDown(KeyCode.Space)&&canJump)
+        {
+            moveInput.y = jumpForce;
+            canDoubleJump = true;
+        }
+        else if(Input.GetKeyDown(KeyCode.Space)&&canDoubleJump)
+        {
+            moveInput.y = jumpForce;
+            canDoubleJump = false;
+        }
+        characterController.Move(moveInput*Time.deltaTime);
 
         //camera rotation using mouse input
         mouseInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"))*mouseSensitivity;
@@ -42,5 +73,7 @@ public class PlayerController : MonoBehaviour
         }
         transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y + mouseInput.x, transform.rotation.eulerAngles.z);
         cameraTran.rotation = Quaternion.Euler(cameraTran.rotation.eulerAngles + new Vector3(mouseInput.y, 0f, 0f));
+        anim.SetFloat("moveSpeed", moveInput.magnitude);
+        anim.SetBool("OnGround", canJump);
     }
 }
