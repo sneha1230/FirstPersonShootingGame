@@ -80,6 +80,20 @@ public class PlayerController : MonoBehaviour
         //shooting the bullet
         if(Input.GetMouseButtonDown(0))
         {
+            //using raycast
+            RaycastHit hit;
+            if(Physics.Raycast(cameraTran.position,cameraTran.forward,out hit, 50.0f))
+            {
+                if(Vector3.Distance(cameraTran.position,hit.point)>2.0f)
+                {
+                    firePoint.LookAt(hit.point);
+                }
+            }
+            else
+            {
+                firePoint.LookAt(cameraTran.position + (cameraTran.forward * 30.0f));
+            }
+
             Instantiate(bullet, firePoint.position, firePoint.rotation);
         }
         anim.SetFloat("moveSpeed", moveInput.magnitude);
